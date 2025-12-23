@@ -10,7 +10,7 @@
 #endif
 
 waybar::modules::CpuUsage::CpuUsage(const std::string& id, const Json::Value& config)
-    : ALabel(config, "cpu_usage", id, "{usage}%", 10) {
+    : AIconLabel(config, "cpu_usage", id, "{usage}%", 10) {
   thread_ = [this] {
     dp.emit();
     thread_.sleep_for(interval_);
@@ -49,7 +49,7 @@ auto waybar::modules::CpuUsage::update() -> void {
   }
 
   // Call parent update
-  ALabel::update();
+  AIconLabel::update();
 }
 
 std::tuple<std::vector<uint16_t>, std::string> waybar::modules::CpuUsage::getCpuUsage(

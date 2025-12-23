@@ -9,12 +9,12 @@
 #include <utility>
 #include <vector>
 
-#include "ALabel.hpp"
+#include "AIconLabel.hpp"
 #include "util/sleeper_thread.hpp"
 
 namespace waybar::modules {
 
-class CpuUsage : public ALabel {
+class CpuUsage : public AIconLabel {
  public:
   CpuUsage(const std::string&, const Json::Value&);
   virtual ~CpuUsage() = default;
