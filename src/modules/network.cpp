@@ -83,7 +83,7 @@ waybar::modules::Network::readBandwidthUsage() {
 }
 
 waybar::modules::Network::Network(const std::string &id, const Json::Value &config)
-    : ALabel(config, "network", id, DEFAULT_FORMAT, 60) {
+    : AIconLabel(config, "network", id, DEFAULT_FORMAT, 60) {
   // Start with some "text" in the module's label_. update() will then
   // update it. Since the text should be different, update() will be able
   // to show or hide the event_box_. This is to work around the case where
@@ -143,6 +143,17 @@ waybar::modules::Network::~Network() {
     nl_close(sock_);
     nl_socket_free(sock_);
   }
+}
+
+bool waybar::modules::Network::onNetworkQueryTooltip(int x, int y, bool keyboard_mode, const Glib::RefPtr<Gtk::Tooltip>& tooltip, std::string& data) {
+  auto [iconLabel, cleanLabel] = extractIcon(data);
+
+  tooltip->set_markup(cleanLabel);
+  if (iconLabel.length() > 0) {
+    tooltip->set_icon_from_icon_name(iconLabel, Gtk::ICON_SIZE_INVALID);
+  }
+
+  return true; 
 }
 
 void waybar::modules::Network::createEventSocket() {
@@ -385,15 +396,23 @@ auto waybar::modules::Network::update() -> void {
           fmt::arg("bandwidthTotalBytes",
                    pow_format((bandwidth_up + bandwidth_down) / interval_.count(), "B/s")));
       if (label_.get_tooltip_text() != tooltip_text) {
-        label_.set_tooltip_markup(tooltip_text);
+        box_.set_has_tooltip();
+        box_.signal_query_tooltip();
+        box_.signal_query_tooltip().connect(
+            sigc::bind(sigc::mem_fun(*this, &Network::onNetworkQueryTooltip), tooltip_text)
+        );
       }
     } else if (label_.get_tooltip_text() != text) {
-      label_.set_tooltip_markup(text);
+      box_.set_has_tooltip();
+      box_.signal_query_tooltip();
+      box_.signal_query_tooltip().connect(
+          sigc::bind(sigc::mem_fun(*this, &Network::onNetworkQueryTooltip), text)
+      );
     }
   }
 
   // Call parent update
-  ALabel::update();
+  AIconLabel::update();
 }
 
 // https://gist.github.com/rressi/92af77630faf055934c723ce93ae2495

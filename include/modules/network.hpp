@@ -9,9 +9,10 @@
 #include <sys/epoll.h>
 
 #include <optional>
+#include <string>
 #include <vector>
 
-#include "ALabel.hpp"
+#include "AIconLabel.hpp"
 #include "util/sleeper_thread.hpp"
 #ifdef WANT_RFKILL
 #include "util/rfkill.hpp"
@@ -21,11 +22,14 @@ enum ip_addr_pref : uint8_t { IPV4, IPV6, IPV4_6 };
 
 namespace waybar::modules {
 
-class Network : public ALabel {
+class Network : public AIconLabel {
  public:
   Network(const std::string&, const Json::Value&);
   virtual ~Network();
   auto update() -> void override;
+
+ protected:
+  bool onNetworkQueryTooltip(int x, int y, bool keyboard_mode, const Glib::RefPtr<Gtk::Tooltip>& tooltip, std::string& data);
 
  private:
   static const uint8_t MAX_RETRY{5};
