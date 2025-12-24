@@ -9,6 +9,7 @@
 #include <sys/epoll.h>
 
 #include <optional>
+#include <string>
 #include <vector>
 
 #include "AIconLabel.hpp"
@@ -26,6 +27,9 @@ class Network : public AIconLabel {
   Network(const std::string&, const Json::Value&);
   virtual ~Network();
   auto update() -> void override;
+
+ protected:
+  bool onNetworkQueryTooltip(int x, int y, bool keyboard_mode, const Glib::RefPtr<Gtk::Tooltip>& tooltip, std::string& data);
 
  private:
   static const uint8_t MAX_RETRY{5};

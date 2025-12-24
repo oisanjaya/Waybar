@@ -145,6 +145,17 @@ waybar::modules::Network::~Network() {
   }
 }
 
+bool waybar::modules::Network::onNetworkQueryTooltip(int x, int y, bool keyboard_mode, const Glib::RefPtr<Gtk::Tooltip>& tooltip, std::string& data) {
+  auto [iconLabel, cleanLabel] = extractIcon(data);
+
+  tooltip->set_markup(cleanLabel);
+  if (iconLabel.length() > 0) {
+    tooltip->set_icon_from_icon_name(iconLabel, Gtk::ICON_SIZE_INVALID);
+  }
+
+  return true; 
+}
+
 void waybar::modules::Network::createEventSocket() {
   ev_sock_ = nl_socket_alloc();
   nl_socket_disable_seq_check(ev_sock_);
@@ -385,10 +396,18 @@ auto waybar::modules::Network::update() -> void {
           fmt::arg("bandwidthTotalBytes",
                    pow_format((bandwidth_up + bandwidth_down) / interval_.count(), "B/s")));
       if (label_.get_tooltip_text() != tooltip_text) {
-        label_.set_tooltip_markup(tooltip_text);
+        box_.set_has_tooltip();
+        box_.signal_query_tooltip();
+        box_.signal_query_tooltip().connect(
+            sigc::bind(sigc::mem_fun(*this, &Network::onNetworkQueryTooltip), tooltip_text)
+        );
       }
     } else if (label_.get_tooltip_text() != text) {
-      label_.set_tooltip_markup(text);
+      box_.set_has_tooltip();
+      box_.signal_query_tooltip();
+      box_.signal_query_tooltip().connect(
+          sigc::bind(sigc::mem_fun(*this, &Network::onNetworkQueryTooltip), text)
+      );
     }
   }
 
