@@ -8,7 +8,7 @@ bool waybar::modules::IdleInhibitor::status = false;
 
 waybar::modules::IdleInhibitor::IdleInhibitor(const std::string& id, const Bar& bar,
                                               const Json::Value& config)
-    : ALabel(config, "idle_inhibitor", id, "{status}", 0, false, true),
+    : AIconLabel(config, "idle_inhibitor", id, "{status}", 0, false, true),
       bar_(bar),
       idle_inhibitor_(nullptr),
       pid_(-1) {
@@ -74,7 +74,7 @@ auto waybar::modules::IdleInhibitor::update() -> void {
                                           fmt::arg("icon", getIcon(0, status_text))));
   }
   // Call parent update
-  ALabel::update();
+  AIconLabel::update();
 }
 
 void waybar::modules::IdleInhibitor::toggleStatus() {
@@ -118,6 +118,6 @@ bool waybar::modules::IdleInhibitor::handleToggle(GdkEventButton* const& e) {
     }
   }
 
-  ALabel::handleToggle(e);
+  AIconLabel::handleToggle(e);
   return true;
 }
