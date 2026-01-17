@@ -8,7 +8,7 @@
 #endif
 
 waybar::modules::Temperature::Temperature(const std::string& id, const Json::Value& config)
-    : ALabel(config, "temperature", id, "{temperatureC}°C", 10) {
+    : AIconLabel(config, "temperature", id, "{temperatureC}°C", 10) {
 #if defined(__FreeBSD__)
 // FreeBSD uses sysctlbyname instead of read from a file
 #else
@@ -106,7 +106,7 @@ auto waybar::modules::Temperature::update() -> void {
         fmt::arg("temperatureF", temperature_f), fmt::arg("temperatureK", temperature_k)));
   }
   // Call parent update
-  ALabel::update();
+  AIconLabel::update();
 }
 
 float waybar::modules::Temperature::getTemperature() {
