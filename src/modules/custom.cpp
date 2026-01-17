@@ -6,7 +6,7 @@
 
 waybar::modules::Custom::Custom(const std::string& name, const std::string& id,
                                 const Json::Value& config, const std::string& output_name)
-    : ALabel(config, "custom-" + name, id, "{}"),
+    : AIconLabel(config, "custom-" + name, id, "{}"),
       name_(name),
       output_name_(output_name),
       id_(id),
@@ -148,13 +148,13 @@ void waybar::modules::Custom::handleEvent() {
 }
 
 bool waybar::modules::Custom::handleScroll(GdkEventScroll* e) {
-  auto ret = ALabel::handleScroll(e);
+  auto ret = AIconLabel::handleScroll(e);
   handleEvent();
   return ret;
 }
 
 bool waybar::modules::Custom::handleToggle(GdkEventButton* const& e) {
-  auto ret = ALabel::handleToggle(e);
+  auto ret = AIconLabel::handleToggle(e);
   handleEvent();
   return ret;
 }
@@ -220,7 +220,7 @@ auto waybar::modules::Custom::update() -> void {
     }
   }
   // Call parent update
-  ALabel::update();
+  AIconLabel::update();
 }
 
 void waybar::modules::Custom::parseOutputRaw() {

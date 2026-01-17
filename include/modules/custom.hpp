@@ -5,14 +5,14 @@
 #include <csignal>
 #include <string>
 
-#include "ALabel.hpp"
+#include "AIconLabel.hpp"
 #include "util/command.hpp"
 #include "util/json.hpp"
 #include "util/sleeper_thread.hpp"
 
 namespace waybar::modules {
 
-class Custom : public ALabel {
+class Custom : public AIconLabel {
  public:
   Custom(const std::string&, const std::string&, const Json::Value&, const std::string&);
   virtual ~Custom();
