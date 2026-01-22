@@ -159,6 +159,17 @@ bool waybar::modules::Custom::handleToggle(GdkEventButton* const& e) {
   return ret;
 }
 
+bool waybar::modules::Custom::onCustomQueryTooltip(int x, int y, bool keyboard_mode, const Glib::RefPtr<Gtk::Tooltip>& tooltip, std::string& data) {
+  auto [iconLabel, cleanLabel] = extractIcon(data);
+
+  tooltip->set_markup(cleanLabel);
+  if (iconLabel.length() > 0) {
+    tooltip->set_icon_from_icon_name(iconLabel, Gtk::ICON_SIZE_INVALID);
+  }
+
+  return true; 
+}
+
 auto waybar::modules::Custom::update() -> void {
   // Hide label if output is empty
   if ((config_["exec"].isString() || config_["exec-if"].isString()) &&
@@ -180,21 +191,28 @@ auto waybar::modules::Custom::update() -> void {
       } else {
         label_.set_markup(str);
         if (tooltipEnabled()) {
+          std::string formatted_tooltip;
           if (tooltip_format_enabled_) {
             auto tooltip = config_["tooltip-format"].asString();
             tooltip = fmt::format(
                 fmt::runtime(tooltip), fmt::arg("text", text_), fmt::arg("alt", alt_),
                 fmt::arg("icon", getIcon(percentage_, alt_)), fmt::arg("percentage", percentage_));
-            label_.set_tooltip_markup(tooltip);
+            formatted_tooltip = tooltip;
           } else if (text_ == tooltip_) {
             if (label_.get_tooltip_markup() != str) {
-              label_.set_tooltip_markup(str);
+              formatted_tooltip = str;
             }
           } else {
             if (label_.get_tooltip_markup() != tooltip_) {
-              label_.set_tooltip_markup(tooltip_);
+              formatted_tooltip = tooltip_;
             }
           }
+
+          box_.set_has_tooltip();
+          box_.signal_query_tooltip();
+          box_.signal_query_tooltip().connect(
+              sigc::bind(sigc::mem_fun(*this, &Custom::onCustomQueryTooltip), formatted_tooltip)
+          );
         }
         auto style = label_.get_style_context();
         auto classes = style->list_classes();

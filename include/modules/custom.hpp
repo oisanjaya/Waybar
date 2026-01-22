@@ -28,6 +28,7 @@ class Custom : public AIconLabel {
   void handleEvent();
   bool handleScroll(GdkEventScroll* e) override;
   bool handleToggle(GdkEventButton* const& e) override;
+  bool onCustomQueryTooltip(int x, int y, bool keyboard_mode, const Glib::RefPtr<Gtk::Tooltip>& tooltip, std::string& data);
 
   const std::string name_;
   const std::string output_name_;
