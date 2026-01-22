@@ -19,6 +19,7 @@ class Temperature : public AIconLabel {
   float getTemperature();
   bool isCritical(uint16_t);
   bool isWarning(uint16_t);
+  bool onTemperatureQueryTooltip(int x, int y, bool keyboard_mode, const Glib::RefPtr<Gtk::Tooltip>& tooltip, std::string& data);
 
   std::string file_path_;
   util::SleeperThread thread_;

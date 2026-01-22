@@ -101,12 +101,29 @@ auto waybar::modules::Temperature::update() -> void {
     if (config_["tooltip-format"].isString()) {
       tooltip_format = config_["tooltip-format"].asString();
     }
-    label_.set_tooltip_text(fmt::format(
+    auto formatted_tooltip =fmt::format(
         fmt::runtime(tooltip_format), fmt::arg("temperatureC", temperature_c),
-        fmt::arg("temperatureF", temperature_f), fmt::arg("temperatureK", temperature_k)));
+        fmt::arg("temperatureF", temperature_f), fmt::arg("temperatureK", temperature_k));
+
+    box_.set_has_tooltip();
+    box_.signal_query_tooltip();
+    box_.signal_query_tooltip().connect(
+        sigc::bind(sigc::mem_fun(*this, &Temperature::onTemperatureQueryTooltip), formatted_tooltip)
+    );
   }
   // Call parent update
   AIconLabel::update();
+}
+
+bool waybar::modules::Temperature::onTemperatureQueryTooltip(int x, int y, bool keyboard_mode, const Glib::RefPtr<Gtk::Tooltip>& tooltip, std::string& data) {
+  auto [iconLabel, cleanLabel] = extractIcon(data);
+
+  tooltip->set_markup(cleanLabel);
+  if (iconLabel.length() > 0) {
+    tooltip->set_icon_from_icon_name(iconLabel, Gtk::ICON_SIZE_INVALID);
+  }
+
+  return true; 
 }
 
 float waybar::modules::Temperature::getTemperature() {
