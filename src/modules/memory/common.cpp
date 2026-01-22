@@ -80,7 +80,7 @@ auto waybar::modules::Memory::update() -> void {
     }
 
     if (tooltipEnabled()) {
-      Glib::ustring formatted_tooltip;
+      std::string formatted_tooltip;
       if (config_["tooltip-format"].isString()) {
         auto tooltip_format = config_["tooltip-format"].asString();
         formatted_tooltip = fmt::format(
