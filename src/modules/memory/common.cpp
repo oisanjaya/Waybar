@@ -1,4 +1,5 @@
 #include "AIconLabel.hpp"
+#include "glibmm/ustring.h"
 #include "modules/memory.hpp"
 
 waybar::modules::Memory::Memory(const std::string& id, const Json::Value& config)
@@ -7,6 +8,17 @@ waybar::modules::Memory::Memory(const std::string& id, const Json::Value& config
     dp.emit();
     thread_.sleep_for(interval_);
   };
+}
+
+bool waybar::modules::Memory::onMemoryQueryTooltip(int x, int y, bool keyboard_mode, const Glib::RefPtr<Gtk::Tooltip>& tooltip, std::string& data) {
+  auto [iconLabel, cleanLabel] = extractIcon(data);
+
+  tooltip->set_markup(cleanLabel);
+  if (iconLabel.length() > 0) {
+    tooltip->set_icon_from_icon_name(iconLabel, Gtk::ICON_SIZE_INVALID);
+  }
+
+  return true; 
 }
 
 auto waybar::modules::Memory::update() -> void {
@@ -68,19 +80,25 @@ auto waybar::modules::Memory::update() -> void {
     }
 
     if (tooltipEnabled()) {
+      Glib::ustring formatted_tooltip;
       if (config_["tooltip-format"].isString()) {
         auto tooltip_format = config_["tooltip-format"].asString();
-        label_.set_tooltip_text(fmt::format(
+        formatted_tooltip = fmt::format(
             fmt::runtime(tooltip_format), used_ram_percentage,
             fmt::arg("total", total_ram_gigabytes), fmt::arg("swapTotal", total_swap_gigabytes),
             fmt::arg("percentage", used_ram_percentage),
             fmt::arg("swapState", swaptotal == 0 ? "Off" : "On"),
             fmt::arg("swapPercentage", used_swap_percentage), fmt::arg("used", used_ram_gigabytes),
             fmt::arg("swapUsed", used_swap_gigabytes), fmt::arg("avail", available_ram_gigabytes),
-            fmt::arg("swapAvail", available_swap_gigabytes)));
+            fmt::arg("swapAvail", available_swap_gigabytes));
       } else {
-        label_.set_tooltip_text(fmt::format("{:.{}f}GiB used", used_ram_gigabytes, 1));
+        formatted_tooltip = fmt::format("{:.{}f}GiB used", used_ram_gigabytes, 1);
       }
+      box_.set_has_tooltip();
+      box_.signal_query_tooltip();
+      box_.signal_query_tooltip().connect(
+          sigc::bind(sigc::mem_fun(*this, &Memory::onMemoryQueryTooltip), formatted_tooltip)
+      );
     }
   } else {
     event_box_.hide();

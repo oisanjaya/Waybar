@@ -11,6 +11,7 @@
 namespace waybar::modules {
 
 class Memory : public AIconLabel {
+  bool onMemoryQueryTooltip(int x, int y, bool keyboard_mode, const Glib::RefPtr<Gtk::Tooltip>& tooltip, std::string& data);
  public:
   Memory(const std::string&, const Json::Value&);
   virtual ~Memory() = default;
