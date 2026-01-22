@@ -15,6 +15,7 @@
 namespace waybar::modules {
 
 class Cpu : public AIconLabel {
+  bool onCpuQueryTooltip(int x, int y, bool keyboard_mode, const Glib::RefPtr<Gtk::Tooltip>& tooltip, std::string& data);
  public:
   Cpu(const std::string&, const Json::Value&);
   virtual ~Cpu() = default;

@@ -22,13 +22,28 @@ waybar::modules::Cpu::Cpu(const std::string& id, const Json::Value& config)
   };
 }
 
+bool waybar::modules::Cpu::onCpuQueryTooltip(int x, int y, bool keyboard_mode, const Glib::RefPtr<Gtk::Tooltip>& tooltip, std::string& data) {
+  auto [iconLabel, cleanLabel] = extractIcon(data);
+
+  tooltip->set_markup(cleanLabel);
+  if (iconLabel.length() > 0) {
+    tooltip->set_icon_from_icon_name(iconLabel, Gtk::ICON_SIZE_INVALID);
+  }
+
+  return true; 
+}
+
 auto waybar::modules::Cpu::update() -> void {
   // TODO: as creating dynamic fmt::arg arrays is buggy we have to calc both
   auto [load1, load5, load15] = Load::getLoad();
   auto [cpu_usage, tooltip] = CpuUsage::getCpuUsage(prev_times_);
   auto [max_frequency, min_frequency, avg_frequency] = CpuFrequency::getCpuFrequency();
   if (tooltipEnabled()) {
-    label_.set_tooltip_text(tooltip);
+    box_.set_has_tooltip();
+    box_.signal_query_tooltip();
+    box_.signal_query_tooltip().connect(
+        sigc::bind(sigc::mem_fun(*this, &Cpu::onCpuQueryTooltip), tooltip)
+    );
   }
   auto format = format_;
   auto total_usage = cpu_usage.empty() ? 0 : cpu_usage[0];
