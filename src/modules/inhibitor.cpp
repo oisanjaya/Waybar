@@ -123,10 +123,25 @@ auto Inhibitor::update() -> void {
   label_.get_style_context()->add_class(status_text);
 
   if (tooltipEnabled()) {
-    label_.set_tooltip_text(status_text);
+    box_.set_has_tooltip();
+    box_.signal_query_tooltip();
+    box_.signal_query_tooltip().connect(
+        sigc::bind(sigc::mem_fun(*this, &Inhibitor::onInhibitorQueryTooltip), status_text)
+    );
   }
 
   return AIconLabel::update();
+}
+
+bool waybar::modules::Inhibitor::onInhibitorQueryTooltip(int x, int y, bool keyboard_mode, const Glib::RefPtr<Gtk::Tooltip>& tooltip, std::string& data) {
+  auto [iconLabel, cleanLabel] = extractIcon(data);
+
+  tooltip->set_markup(cleanLabel);
+  if (iconLabel.length() > 0) {
+    tooltip->set_icon_from_icon_name(iconLabel, Gtk::ICON_SIZE_INVALID);
+  }
+
+  return true; 
 }
 
 auto Inhibitor::handleToggle(GdkEventButton* const& e) -> bool {

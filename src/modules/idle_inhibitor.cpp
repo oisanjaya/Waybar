@@ -69,12 +69,29 @@ auto waybar::modules::IdleInhibitor::update() -> void {
   if (tooltipEnabled()) {
     auto config = config_[status ? "tooltip-format-activated" : "tooltip-format-deactivated"];
     auto tooltip_format = config.isString() ? config.asString() : "{status}";
-    label_.set_tooltip_markup(fmt::format(fmt::runtime(tooltip_format),
+    auto formatted_tooltip = fmt::format(fmt::runtime(tooltip_format),
                                           fmt::arg("status", status_text),
-                                          fmt::arg("icon", getIcon(0, status_text))));
+                                          fmt::arg("icon", getIcon(0, status_text)));
+
+    box_.set_has_tooltip();
+    box_.signal_query_tooltip();
+    box_.signal_query_tooltip().connect(
+        sigc::bind(sigc::mem_fun(*this, &IdleInhibitor::onIdleInhibitorQueryTooltip), formatted_tooltip)
+    );
   }
   // Call parent update
   AIconLabel::update();
+}
+
+bool waybar::modules::IdleInhibitor::onIdleInhibitorQueryTooltip(int x, int y, bool keyboard_mode, const Glib::RefPtr<Gtk::Tooltip>& tooltip, std::string& data) {
+  auto [iconLabel, cleanLabel] = extractIcon(data);
+
+  tooltip->set_markup(cleanLabel);
+  if (iconLabel.length() > 0) {
+    tooltip->set_icon_from_icon_name(iconLabel, Gtk::ICON_SIZE_INVALID);
+  }
+
+  return true; 
 }
 
 void waybar::modules::IdleInhibitor::toggleStatus() {

@@ -18,6 +18,7 @@ class Inhibitor : public AIconLabel {
 
  private:
   auto handleToggle(::GdkEventButton* const& e) -> bool override;
+  bool onInhibitorQueryTooltip(int x, int y, bool keyboard_mode, const Glib::RefPtr<Gtk::Tooltip>& tooltip, std::string& data);
 
   const std::unique_ptr<::GDBusConnection, void (*)(::GDBusConnection*)> dbus_;
   const std::string inhibitors_;

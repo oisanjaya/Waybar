@@ -21,6 +21,7 @@ class IdleInhibitor : public AIconLabel {
  private:
   bool handleToggle(GdkEventButton* const& e) override;
   void toggleStatus();
+  bool onIdleInhibitorQueryTooltip(int x, int y, bool keyboard_mode, const Glib::RefPtr<Gtk::Tooltip>& tooltip, std::string& data);
 
   const Bar& bar_;
   struct zwp_idle_inhibitor_v1* idle_inhibitor_;
