@@ -2,6 +2,8 @@
 
 #include <spdlog/spdlog.h>
 
+#include <utility>
+
 #include "util/scope_guard.hpp"
 
 waybar::modules::Custom::Custom(const std::string& name, const std::string& id,
@@ -136,7 +138,7 @@ void waybar::modules::Custom::waitingWorker() {
 }
 
 void waybar::modules::Custom::refresh(int sig) {
-  if (sig == SIGRTMIN + config_["signal"].asInt()) {
+  if (config_["signal"].isInt() && sig == SIGRTMIN + config_["signal"].asInt()) {
     thread_.wake_up();
   }
 }
@@ -191,28 +193,28 @@ auto waybar::modules::Custom::update() -> void {
       } else {
         label_.set_markup(str);
         if (tooltipEnabled()) {
-          std::string formatted_tooltip;
+          std::string tooltip_markup;
           if (tooltip_format_enabled_) {
             auto tooltip = config_["tooltip-format"].asString();
-            tooltip = fmt::format(
-                fmt::runtime(tooltip), fmt::arg("text", text_), fmt::arg("alt", alt_),
-                fmt::arg("icon", getIcon(percentage_, alt_)), fmt::arg("percentage", percentage_));
-            formatted_tooltip = tooltip;
+            tooltip_markup = fmt::format(fmt::runtime(tooltip), fmt::arg("text", text_),
+                                         fmt::arg("tooltip", tooltip_), fmt::arg("alt", alt_),
+                                         fmt::arg("icon", getIcon(percentage_, alt_)),
+                                         fmt::arg("percentage", percentage_));
           } else if (text_ == tooltip_) {
-            if (label_.get_tooltip_markup() != str) {
-              formatted_tooltip = str;
-            }
+            tooltip_markup = str;
           } else {
-            if (label_.get_tooltip_markup() != tooltip_) {
-              formatted_tooltip = tooltip_;
-            }
+            tooltip_markup = tooltip_;
           }
 
-          box_.set_has_tooltip();
-          box_.signal_query_tooltip();
-          box_.signal_query_tooltip().connect(
-              sigc::bind(sigc::mem_fun(*this, &Custom::onCustomQueryTooltip), formatted_tooltip)
-          );
+          if (last_tooltip_markup_ != tooltip_markup) {
+            box_.set_has_tooltip();
+            box_.signal_query_tooltip();
+            box_.signal_query_tooltip().connect(
+                sigc::bind(sigc::mem_fun(*this, &Custom::onCustomQueryTooltip), tooltip_markup)
+            );
+            last_tooltip_markup_ = std::move(tooltip_markup);
+
+          }
         }
         auto style = label_.get_style_context();
         auto classes = style->list_classes();
