@@ -135,7 +135,6 @@ bool AIconLabel::setTooltipMarkup(const Glib::ustring& markup) {
 
   if (iconLabel.length() > 0) {
     box_.set_has_tooltip();
-    box_.signal_query_tooltip();
     box_.signal_query_tooltip().connect(
         sigc::bind(sigc::mem_fun(*this, &AIconLabel::onCustomQueryTooltip), markup.raw()));
   } else {
