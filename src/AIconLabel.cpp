@@ -113,22 +113,37 @@ auto AIconLabel::update() -> void {
   ALabel::update();
 }
 
-bool AIconLabel::setTooltipMarkup(const Glib::ustring& markup) {
-  return ALabel::setTooltipMarkup(markup);
-}
+bool AIconLabel::onCustomQueryTooltip(int x, int y, bool keyboard_mode,
+                                      const Glib::RefPtr<Gtk::Tooltip>& tooltip,
+                                      std::string& data) {
+  auto [iconLabel, cleanLabel] = extractIcon(data);
 
-bool AIconLabel::setTooltipMarkup(
-    const Glib::ustring& markup,
-    const sigc::slot<bool(int, int, bool, const Glib::RefPtr<Gtk::Tooltip>&)>& customToolTipQuery) {
-  bool retVal = setTooltipMarkup(markup);
-
-  if (retVal && customToolTipQuery) {
-    box_.set_has_tooltip();
-    box_.signal_query_tooltip();
-    box_.signal_query_tooltip().connect(customToolTipQuery);
+  tooltip->set_markup(cleanLabel);
+  if (iconLabel.length() > 0) {
+    tooltip->set_icon_from_icon_name(iconLabel, Gtk::ICON_SIZE_INVALID);
   }
 
-  return retVal;
+  return true;
+}
+
+bool AIconLabel::setTooltipMarkup(const Glib::ustring& markup) {
+  if (last_tooltip_markup_ == markup) {
+    return false;
+  }
+
+  auto [iconLabel, cleanLabel] = extractIcon(markup);
+
+  if (iconLabel.length() > 0) {
+    box_.set_has_tooltip();
+    box_.signal_query_tooltip();
+    box_.signal_query_tooltip().connect(
+        sigc::bind(sigc::mem_fun(*this, &AIconLabel::onCustomQueryTooltip), markup.raw()));
+  } else {
+    box_.set_tooltip_markup(cleanLabel);
+  }
+
+  last_tooltip_markup_ = markup;
+  return true;
 }
 
 bool AIconLabel::iconEnabled() const {
